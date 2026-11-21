@@ -1,0 +1,61 @@
+# Weekly research: keep the stacks, routes and skills catalog current.
+# With an ANTHROPIC_API_KEY secret, Claude researches and opens a PR for you to review.
+# Without it, a checklist issue is opened instead.
+name: Weekly research
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Claude researches and opens a PR
+        if: env.HAS_KEY == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You maintain this playbook: stacks/*.md (recommended stacks), routes.toml
+            (situation -> skill routing) and skills.md (catalog). Do a weekly review:
+
+            1. For each stack file, check current sources (official release notes, the latest
+               State of JS/Python surveys, maintainers' docs) for major releases, deprecations or
+               clear shifts in community defaults. Change a recommendation only with strong,
+               cited evidence; otherwise just bump "Last reviewed". Keep setup commands working.
+            2. Search for popular, well-maintained Claude Code skills and plugins (GitHub stars,
+               the official plugin marketplace) that fill gaps in routes.toml. Add at most 3 per
+               week, each with a verified source link in skills.md and a specific route.
+            3. Mark anything archived or unmaintained.
+            4. Run `python3 scripts/check.py` until it passes.
+
+            Commit on a new branch named research/$(date +%Y-%m-%d), push, and open a PR with
+            `gh pr create` that summarizes each change with its source. If nothing changed
+            beyond review dates, say so in the PR.
+          claude_args: |
+            --allowedTools "Read,Edit,Write,Glob,Grep,WebSearch,WebFetch,Bash(python3 scripts/check.py),Bash(git:*),Bash(gh pr create:*),Bash(date:*)"
+
+      - name: Open a checklist issue (no API key configured)
+        if: env.HAS_KEY != 'true'
+        run: |
+          title="Weekly playbook review $(date +%Y-%m-%d)"
+          gh issue create --title "$title" --body "- [ ] Check stacks/*.md for major releases or changed defaults
+          - [ ] Look for new well-maintained skills/plugins worth routing to
+          - [ ] Mark archived or unmaintained entries
+          - [ ] Run \`python3 scripts/check.py\`
+
+          Add an \`ANTHROPIC_API_KEY\` secret to have Claude do this and open a PR automatically."

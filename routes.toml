@@ -1,0 +1,149 @@
+# Skill routing: "in this situation → use this skill, agent or plugin".
+#
+# tack reads this file and nudges the agent automatically:
+#   - words: matched (whole words, any case) against what the user types
+#   - files: matched (fnmatch on the file name) when the agent is about to edit a file
+# Each route fires at most once per session. Within a `group`, only the FIRST matching
+# route fires, so list the most specific routes first. That's how "pick ONE primary
+# design skill" works.
+#
+# Target (exactly one):
+#   skill = "<name>"    a skill; plugin skills use "plugin:skill"
+#   agent = "<name>"    a subagent to delegate to
+# Availability (used by `tack doctor` and to skip routes you can't use):
+#   builtin = true                        ships with Claude Code
+#   plugin  = "<name>@<marketplace>"      provided by an installed plugin
+#   project = true                        installed into each project by `tack init`
+#   (none of these: a user skill in ~/.claude/skills/<name>)
+
+version = 1
+
+# ------------------------------------------------------------------ design (pick ONE)
+
+[[route]]
+name = "3d"
+group = "design"
+skill = "threejs-animation"
+reason = "3D scenes, GLTF models, procedural motion"
+words = ["three.js", "threejs", "3d", "gltf", "webgl", "r3f", "react-three-fiber"]
+
+[[route]]
+name = "scroll-choreography"
+group = "design"
+skill = "gpt-taste"
+reason = "Heavy scroll choreography: GSAP, pinning, scrubbing"
+words = ["gsap", "scrolltrigger", "scroll animation", "scroll-driven", "parallax", "pinning"]
+
+[[route]]
+name = "motion"
+group = "design"
+skill = "design-motion-principles"
+reason = "Designing or auditing UI motion: enter/exit, hover, micro-interactions"
+words = ["animation", "animations", "animate", "transition", "transitions", "micro-interaction", "micro-interactions", "hover effect", "motion"]
+
+[[route]]
+name = "redesign"
+group = "design"
+skill = "redesign-existing-projects"
+reason = "Improving an existing app's look; stripping generic AI-looking patterns"
+words = ["redesign", "looks generic", "looks like ai", "modernize the ui", "make it look better", "look better", "ugly"]
+
+[[route]]
+name = "landing-page"
+group = "design"
+skill = "design-taste-frontend"
+reason = "Landing pages, portfolios, marketing pages"
+words = ["landing page", "portfolio", "marketing page", "hero section", "homepage"]
+
+[[route]]
+name = "responsive"
+group = "design"
+skill = "responsive-design"
+reason = "Breakpoints, container queries, fluid type"
+words = ["responsive", "breakpoint", "breakpoints", "mobile layout", "container query", "container queries"]
+
+[[route]]
+name = "ui"
+group = "design"
+skill = "impeccable"
+reason = "Any substantial UI work: new surfaces, critique, audit, polish (the flagship design skill)"
+words = ["ui", "ux", "design", "layout", "styling", "restyle", "component", "dashboard", "css", "polish", "frontend", "front-end", "screen"]
+files = ["*.tsx", "*.jsx", "*.vue", "*.svelte", "*.astro", "*.css", "*.scss", "*.html"]
+
+# ------------------------------------------------------------------ quality
+
+[[route]]
+name = "accessibility"
+skill = "web-design-guidelines"
+reason = "Rule-by-rule accessibility, forms, focus and copy checks"
+words = ["accessibility", "accessible", "a11y", "wcag", "contrast", "aria", "screen reader", "keyboard navigation"]
+
+[[route]]
+name = "debugging"
+skill = "debug"
+project = true
+reason = "Find the root cause before patching"
+words = ["bug", "broken", "error", "crash", "crashes", "traceback", "exception", "failing", "doesn't work", "not working", "regression"]
+
+[[route]]
+name = "tests"
+agent = "test-writer"
+project = true
+reason = "Behavior-focused tests in the project's style"
+words = ["write tests", "add tests", "test coverage", "coverage", "unit tests", "flaky test"]
+
+[[route]]
+name = "planning"
+skill = "plan"
+project = true
+reason = "Short, checkable plan before non-trivial work"
+words = ["new feature", "architecture", "refactor", "migrate", "migration", "rewrite"]
+
+[[route]]
+name = "security"
+agent = "security-reviewer"
+project = true
+reason = "Source-to-sink review of auth, input handling, secrets"
+words = ["auth", "authentication", "login", "password", "passwords", "jwt", "oauth", "secret", "secrets", "permissions", "upload", "sql injection", "xss"]
+files = ["*auth*", "*login*", "*session*", "*password*", "*.sql"]
+
+[[route]]
+name = "review"
+skill = "review"
+project = true
+reason = "Review the diff before calling it done"
+words = ["review", "pull request", "pr", "code review"]
+
+# ------------------------------------------------------------------ building with AI
+
+[[route]]
+name = "claude-api"
+skill = "claude-api"
+builtin = true
+reason = "Anything built on the Claude API or Anthropic SDKs: models, tools, caching, agents"
+words = ["claude api", "anthropic", "llm", "rag", "embeddings", "agent sdk", "tool use", "prompt caching", "chatbot", "ai feature"]
+
+# ------------------------------------------------------------------ platforms (plugins)
+
+[[route]]
+name = "nextjs"
+skill = "vercel:nextjs"
+plugin = "vercel@claude-plugins-official"
+reason = "Next.js App Router, Server Components, caching, middleware"
+words = ["next.js", "nextjs", "app router", "server component", "server components", "server action"]
+files = ["next.config.*"]
+
+[[route]]
+name = "deploy"
+skill = "vercel:deployments-cicd"
+plugin = "vercel@claude-plugins-official"
+reason = "Deploying, previews, promotions, rollbacks, CI/CD"
+words = ["deploy", "deployment", "vercel", "preview url", "rollback"]
+files = ["vercel.json", "vercel.ts"]
+
+[[route]]
+name = "browser-debugging"
+skill = "chrome-devtools-mcp:chrome-devtools"
+plugin = "chrome-devtools-mcp@claude-plugins-official"
+reason = "Inspect a running page: console, network, performance, screenshots"
+words = ["console error", "network request", "lighthouse", "page is slow", "in the browser", "screenshot"]
