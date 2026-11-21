@@ -32,7 +32,7 @@ name = "scroll-choreography"
 group = "design"
 skill = "gpt-taste"
 reason = "Heavy scroll choreography: GSAP, pinning, scrubbing"
-words = ["gsap", "scrolltrigger", "scroll animation", "scroll-driven", "parallax", "pinning"]
+words = ["gsap", "scrolltrigger", "scroll animation", "scroll animations", "scroll-driven", "parallax", "scroll pinning", "pin on scroll", "scrubbing"]
 
 [[route]]
 name = "motion"
