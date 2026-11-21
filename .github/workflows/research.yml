@@ -52,8 +52,13 @@ jobs:
       - name: Open a checklist issue (no API key configured)
         if: env.HAS_KEY != 'true'
         run: |
+          # keep at most one open reminder, so issues never pile up
+          if [ "$(gh issue list --state open --label playbook-review --json number --jq length)" != "0" ]; then
+            echo "A review reminder is already open."; exit 0
+          fi
+          gh label create playbook-review --color 0E8A16 --description "Weekly playbook review" 2>/dev/null || true
           title="Weekly playbook review $(date +%Y-%m-%d)"
-          gh issue create --title "$title" --body "- [ ] Check stacks/*.md for major releases or changed defaults
+          gh issue create --label playbook-review --title "$title" --body "- [ ] Check stacks/*.md for major releases or changed defaults
           - [ ] Look for new well-maintained skills/plugins worth routing to
           - [ ] Mark archived or unmaintained entries
           - [ ] Run \`python3 scripts/check.py\`
